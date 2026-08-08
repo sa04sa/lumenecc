@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // output: "export", // Removed for Server Actions/MySQL
+  // Required for Cloudflare Pages (Edge runtime compatibility)
   images: {
     unoptimized: true,
+  },
+  // Cloudflare Pages requires this for Server Actions & API routes
+  experimental: {
+    serverComponentsExternalPackages: ["@tidbcloud/serverless"],
   },
 };
 

@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* LUMENEC Brand Colors */
+  --color-lumen-yellow: #FFB800;
+  --color-lumen-yellow-hover: #e6a600;
+  --color-lumen-yellow-light: #FFD166;
+  --color-lumen-white: #FFFFFF;
+  --color-lumen-gray: #A0A0A0;
+
+  --color-dark-950: #000000;
+  --color-dark-900: #0a0a0a;
+  --color-dark-800: #111111;
+  --color-dark-700: #1a1a1a;
+  --color-dark-600: #222222;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --background: #000000;
+  --foreground: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+}
+
+/* Glowing yellow effect */
+.glow-yellow {
+  box-shadow: 0 0 20px rgba(255, 184, 0, 0.4), 0 0 60px rgba(255, 184, 0, 0.15);
+}
+
+.glow-yellow-text {
+  text-shadow: 0 0 20px rgba(255, 184, 0, 0.5);
+}
+
+/* Glassmorphism dark */
+.glass-effect {
+  background: rgba(17, 17, 17, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 184, 0, 0.12);
+}
+
+/* Yellow border card */
+.card-border {
+  border: 1px solid rgba(255, 184, 0, 0.15);
+  background: #111111;
+  transition: border-color 0.3s ease, transform 0.3s ease;
+}
+
+.card-border:hover {
+  border-color: rgba(255, 184, 0, 0.5);
+}
+
+/* Yellow gradient text */
+.text-gradient-yellow {
+  background: linear-gradient(135deg, #FFB800, #FFD166);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Diagonal stripe accent like the logo */
+.stripe-accent {
+  background: linear-gradient(135deg, #FFB800 0%, #FFD166 100%);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #000;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFB800;
+  border-radius: 3px;
+}

@@ -177,7 +177,7 @@ export default function PDFButton({ facture, parametres }: any) {
         });
 
         // ── COLONNE CENTRE : Logo + Nom société ──
-        const logoMaxW = 48, logoMaxH = 24;
+        const logoMaxW = 64, logoMaxH = 32;
         let logoBottomY = 5;
         if (img.width > 0 && img.height > 0) {
           const ratio = Math.min(logoMaxW / img.width, logoMaxH / img.height);
@@ -235,11 +235,11 @@ export default function PDFButton({ facture, parametres }: any) {
           doc.text(reglStr, ML + 22, SH_Y + 14);
         }
 
-        // Titre FACTURE à droite (au-dessus du cadre client)
+        // Titre FACTURE à droite dans l'en-tête (au lieu de chevaucher le cadre client)
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(...C.BLACK);
-        doc.text("FACTURE", W - MR, SH_Y - 2, { align: "right" });
+        doc.text("FACTURE", W - MR, 46, { align: "right" });
 
         // Cadre client (droite)
         const clientBoxX = midX + 4;
@@ -572,14 +572,7 @@ export default function PDFButton({ facture, parametres }: any) {
       const siteUrl = parametres?.siteweb || "www.lumenec-sarl.com";
 
       if (isFacture) {
-        // Footer complet : logo + barre dorée + DNS + infos légales
-
-        // Logo 3cm (30mm) centré à gauche
-        if (img.width > 0 && img.height > 0) {
-          const fLogoW = 30, fLogoH = (img.height / img.width) * fLogoW;
-          const fLogoY = H - fLogoH - 2;
-          doc.addImage(img, "PNG", ML, fLogoY, fLogoW, fLogoH);
-        }
+        // Footer complet : barre dorée + DNS + infos légales
 
         // Barre dorée centrée
         doc.setFillColor(...C.GOLD);

@@ -160,22 +160,14 @@ export default function PDFButton({ facture, parametres }: any) {
         // ── COLONNE DROITE : Contacts & Titre (alignés à droite) ──
         const COL_R_X = W - MR;
 
-        // Titre FACTURE (Fond blanc, sans bordure noire, texte noir) en HAUT À DROITE
-        const badgeW = 45;
-        const badgeH = 11;
-        const badgeX = COL_R_X - badgeW;
-        const badgeY = 7;
-        
-        doc.setFillColor(...C.WHITE);
-        doc.rect(badgeX, badgeY, badgeW, badgeH, "F"); // "F" = remplissage uniquement, pas de bordure
-        
+        // Titre FACTURE (sans fond, texte pur) en HAUT À DROITE
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
+        doc.setFontSize(22);
         doc.setTextColor(...C.BLACK);
-        doc.text("FACTURE", badgeX + badgeW / 2, badgeY + 8, { align: "center" });
+        doc.text("FACTURE", COL_R_X, 15, { align: "right" });
 
-        // Contacts (en dessous du badge)
-        let ry = badgeY + badgeH + 5;
+        // Contacts (en dessous du titre)
+        let ry = 22;
         doc.setFontSize(6.5);
 
         const contactItems = [
@@ -204,9 +196,9 @@ export default function PDFButton({ facture, parametres }: any) {
 
         // Nom de l'entreprise sous le logo
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
+        doc.setFontSize(12);
         doc.setTextColor(...C.BLACK);
-        doc.text((parametres?.nom || "LUMENEC").toUpperCase(), midX, logoBottomY + 4, { align: "center" });
+        doc.text((parametres?.nom || "LUMENEC").toUpperCase(), midX, logoBottomY + 5, { align: "center" });
 
         // ── LIGNE D'ACTIVITÉ centrée en bas de l'en-tête ──
         doc.setFont("helvetica", "normal");
@@ -214,7 +206,7 @@ export default function PDFButton({ facture, parametres }: any) {
         doc.setTextColor(100, 105, 115);
         doc.text(
           "INSTALLATION, VENTE ET ACHAT DE MATÉRIEL ÉLECTRIQUE ET TRAVAUX DIVERS",
-          midX, logoBottomY + 10, { align: "center" }
+          midX, logoBottomY + 9, { align: "center" }
         );
 
         // ── SOUS-HEADER : Numéro / Date / Règlement (Gauche) | FACTURE titre + Client (Droite) ──

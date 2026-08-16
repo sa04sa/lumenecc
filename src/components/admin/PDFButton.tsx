@@ -157,9 +157,25 @@ export default function PDFButton({ facture, parametres }: any) {
           ly += 3.6;
         });
 
-        // ── COLONNE DROITE : Contacts (alignés à droite, y = 7 à 48) ──
+        // ── COLONNE DROITE : Contacts & Titre (alignés à droite) ──
         const COL_R_X = W - MR;
-        let ry = 7;
+
+        // Titre FACTURE stylé (Badge Noir & Blanc) en HAUT À DROITE
+        const badgeW = 45;
+        const badgeH = 11;
+        const badgeX = COL_R_X - badgeW;
+        const badgeY = 7;
+        
+        doc.setFillColor(...C.BLACK);
+        doc.rect(badgeX, badgeY, badgeW, badgeH, "F");
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(...C.WHITE);
+        doc.text("FACTURE", badgeX + badgeW / 2, badgeY + 8, { align: "center" });
+
+        // Contacts (en dessous du badge)
+        let ry = badgeY + badgeH + 5;
         doc.setFontSize(6.5);
 
         const contactItems = [
@@ -234,21 +250,6 @@ export default function PDFButton({ facture, parametres }: any) {
           const reglStr = facture.methode_paiement + (facture.num_cheque ? ` — N° ${facture.num_cheque}` : "");
           doc.text(reglStr, ML + 22, SH_Y + 14);
         }
-
-        // Titre FACTURE stylé (Badge Noir & Blanc) à droite
-        const badgeW = 45;
-        const badgeH = 11;
-        const badgeX = W - MR - badgeW;
-        const badgeY = 37;
-        
-        doc.setFillColor(...C.BLACK);
-        doc.rect(badgeX, badgeY, badgeW, badgeH, "F");
-        
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.setTextColor(...C.WHITE);
-        // text(text, x, y, options)
-        doc.text("FACTURE", badgeX + badgeW / 2, badgeY + 8, { align: "center" });
 
         // Cadre client (droite)
         const clientBoxX = midX + 4;

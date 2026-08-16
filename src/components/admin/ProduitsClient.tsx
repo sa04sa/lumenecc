@@ -356,7 +356,7 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                    Prix d'Achat HT (MAD)
+                    Prix d&apos;Achat HT (MAD)
                   </label>
                   <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-blue-500 focus-within:bg-white transition-all">
                     <DollarSign size={16} className="text-slate-400 flex-shrink-0" />

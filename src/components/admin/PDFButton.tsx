@@ -176,56 +176,69 @@ export default function PDFButton({ facture, parametres }: any) {
           ry += 3.6;
         });
 
-        // ── COLONNE CENTRE : Logo + Nom société (zone réservée : x=70 à x=140) ──
-        const LOGO_ZONE_X = 70, LOGO_ZONE_W = 70;
-        const logoMaxW = 36, logoMaxH = 18;
+        // ── COLONNE CENTRE : Logo + Nom société ──
+        const logoMaxW = 48, logoMaxH = 24;
+        let logoBottomY = 5;
         if (img.width > 0 && img.height > 0) {
           const ratio = Math.min(logoMaxW / img.width, logoMaxH / img.height);
           const lw = img.width * ratio, lh = img.height * ratio;
-          doc.addImage(img, "PNG", midX - lw / 2, 5, lw, lh);
+          doc.addImage(img, "PNG", midX - lw / 2, 4, lw, lh);
+          logoBottomY = 4 + lh;
         }
 
-        // ── LIGNE D'ACTIVITÉ centrée en bas de l'en-tête (y fixe = 33) ──
+        // Nom de l'entreprise sous le logo
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C.BLACK);
+        doc.text((parametres?.nom || "LUMENEC").toUpperCase(), midX, logoBottomY + 4, { align: "center" });
+
+        // ── LIGNE D'ACTIVITÉ centrée en bas de l'en-tête ──
         doc.setFont("helvetica", "normal");
         doc.setFontSize(5.8);
         doc.setTextColor(100, 105, 115);
         doc.text(
           "INSTALLATION, VENTE ET ACHAT DE MATÉRIEL ÉLECTRIQUE ET TRAVAUX DIVERS",
-          midX, 32, { align: "center" }
+          midX, logoBottomY + 10, { align: "center" }
         );
 
-        // ── SOUS-HEADER : Numéro / Date / Règlement (Gauche) | Cadre Client (Droite) ──
+        // ── SOUS-HEADER : Titre | Numéro / Date / Règlement (Gauche) | Cadre Client (Droite) ──
         const SH_Y = HDR_H + 7;
 
-        // Bloc gauche : référence doc
+        // Titre FACTURE à gauche, grand et en gras
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(...C.BLACK);
+        doc.text("FACTURE", ML, SH_Y + 2);
+
+        // Numéro et date en dessous du titre
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(100, 105, 115);
-        doc.text("FACTURE N°", ML, SH_Y);
+        doc.text("N°", ML, SH_Y + 10);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...C.BLACK);
-        doc.text(facture.numero, ML + 24, SH_Y);
+        doc.text(facture.numero, ML + 7, SH_Y + 10);
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(100, 105, 115);
-        doc.text("DATE :", ML, SH_Y + 7);
+        doc.text("DATE :", ML, SH_Y + 17);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8.5);
         doc.setTextColor(...C.BLACK);
-        doc.text(dateStr, ML + 24, SH_Y + 7);
+        doc.text(dateStr, ML + 14, SH_Y + 17);
 
         if (facture.methode_paiement) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(7.5);
           doc.setTextColor(100, 105, 115);
-          doc.text("RÈGLEMENT :", ML, SH_Y + 14);
+          doc.text("RÈGLEMENT :", ML, SH_Y + 24);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8.5);
           doc.setTextColor(...C.BLACK);
           const reglStr = facture.methode_paiement + (facture.num_cheque ? ` — N° ${facture.num_cheque}` : "");
-          doc.text(reglStr, ML + 24, SH_Y + 14);
+          doc.text(reglStr, ML + 22, SH_Y + 24);
         }
 
         // Cadre client (droite)
@@ -480,7 +493,7 @@ export default function PDFButton({ facture, parametres }: any) {
           startY: tableY,
           head,
           body,
-          theme: "plain",
+          theme: docType === "bon_livraison" ? "grid" : "plain",
           headStyles: {
             fillColor:   C.BLACK,
             textColor:   C.WHITE,
@@ -492,8 +505,8 @@ export default function PDFButton({ facture, parametres }: any) {
             fontSize:    8.5,
             textColor:   C.DARK,
             cellPadding: { top: 3.5, bottom: 3.5, left: 4, right: 4 },
-            lineColor:   C.GRAY4,
-            lineWidth:   0.2,
+            lineColor:   docType === "bon_livraison" ? [200, 200, 200] : C.GRAY4,
+            lineWidth:   docType === "bon_livraison" ? 0.3 : 0.2,
           },
           alternateRowStyles: { fillColor: [247, 247, 247] },
           columnStyles: colStyles,
@@ -554,41 +567,49 @@ export default function PDFButton({ facture, parametres }: any) {
       }
 
       // =========================================================================
-      //  FOOTER COMMUN
-      // =========================================================================
-      //  FOOTER COMMUN
+      //  FOOTER
       // =========================================================================
 
-      // Barre dorée (3cm de largeur, 1.2mm d'épaisseur) centrée
+      // Barre dorée centrée (3cm)
       doc.setFillColor(...C.GOLD);
-      doc.rect(W / 2 - 15, H - 18, 30, 1.2, "F");
+      doc.rect(W / 2 - 15, H - 10, 30, 1.5, "F");
 
       // DNS du site web
+      const siteUrl = parametres?.siteweb || "www.lumenec-sarl.com";
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setTextColor(...C.BLACK);
-      doc.text("www.lumenec-sarl.com", W / 2, H - 13.5, { align: "center" });
+      doc.text(siteUrl, W / 2, H - 5, { align: "center" });
 
-      // Ligne 1 : Adresse · Tél · Email
-      const footerLine1 = [
-        parametres?.adresse   || "",
-        parametres?.telephone ? `Tél : ${parametres.telephone}` : "",
-        parametres?.email     || "",
-      ].filter(Boolean).join("   ·   ");
+      // Infos complètes uniquement sur la facture
+      if (isFacture) {
+        const footerLine1 = [
+          parametres?.adresse   || "",
+          parametres?.telephone ? `Tél : ${parametres.telephone}` : "",
+          parametres?.email     || "",
+        ].filter(Boolean).join("   ·   ");
 
-      // Ligne 2 : Identifiants fiscaux
-      const footerLine2 = [
-        parametres?.rc      ? `R.C. : ${parametres.rc}`         : "",
-        parametres?.if_taxe ? `I.F. : ${parametres.if_taxe}`    : "",
-        parametres?.cnss    ? `C.N.S.S. : ${parametres.cnss}`   : "",
-        parametres?.ice     ? `ICE : ${parametres.ice}`         : "",
-      ].filter(Boolean).join("   ·   ");
+        const footerLine2 = [
+          parametres?.rc      ? `R.C. : ${parametres.rc}`       : "",
+          parametres?.if_taxe ? `I.F. : ${parametres.if_taxe}` : "",
+          parametres?.cnss    ? `C.N.S.S. : ${parametres.cnss}`: "",
+          parametres?.ice     ? `ICE : ${parametres.ice}`      : "",
+        ].filter(Boolean).join("   ·   ");
 
-      doc.setFontSize(6.5);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(120, 125, 135);
-      if (footerLine1) doc.text(footerLine1, W / 2, H - 8.5, { align: "center", maxWidth: W - 16 });
-      if (footerLine2) doc.text(footerLine2, W / 2, H - 4.5, { align: "center", maxWidth: W - 16 });
+        // Décale la barre et le DNS vers le haut pour faire de la place
+        doc.setFillColor(...C.GOLD);
+        doc.rect(W / 2 - 15, H - 18, 30, 1.5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...C.BLACK);
+        doc.text(siteUrl, W / 2, H - 13, { align: "center" });
+
+        doc.setFontSize(6);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(120, 125, 135);
+        if (footerLine1) doc.text(footerLine1, W / 2, H - 8, { align: "center", maxWidth: W - 16 });
+        if (footerLine2) doc.text(footerLine2, W / 2, H - 4, { align: "center", maxWidth: W - 16 });
+      }
 
       // Sortie
       const prefix = isDraft ? "BROUILLON" : (docTypeMap[docType] || "Document");

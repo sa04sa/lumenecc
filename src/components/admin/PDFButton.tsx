@@ -88,8 +88,8 @@ export default function PDFButton({ facture, parametres }: any) {
       img.src = "/logo_lumenec-without-background.png";
       await new Promise(r => { img.onload = r; img.onerror = r; });
 
-      // Watermark logo (fond) - pas de watermark pour Bon de Livraison
-      if (img.width > 0 && img.height > 0 && docType !== "bon_livraison") {
+      // Watermark logo (fond) - Seulement pour la Facture
+      if (img.width > 0 && img.height > 0 && isFacture) {
         doc.saveGraphicsState();
         try { (doc as any).setGState(new (doc as any).GState({ opacity: 0.12 })); } catch (_) {}
         const wW = 120, wH = (img.height / img.width) * wW;
@@ -489,7 +489,7 @@ export default function PDFButton({ facture, parametres }: any) {
           startY: tableY,
           head,
           body,
-          theme: docType === "bon_livraison" ? "grid" : "plain",
+          theme: "grid",
           headStyles: {
             fillColor:   C.BLACK,
             textColor:   C.WHITE,
@@ -501,8 +501,8 @@ export default function PDFButton({ facture, parametres }: any) {
             fontSize:    8.5,
             textColor:   C.DARK,
             cellPadding: { top: 3.5, bottom: 3.5, left: 4, right: 4 },
-            lineColor:   docType === "bon_livraison" ? [200, 200, 200] : C.GRAY4,
-            lineWidth:   docType === "bon_livraison" ? 0.3 : 0.2,
+            lineColor:   [200, 200, 200],
+            lineWidth:   0.3,
           },
           alternateRowStyles: { fillColor: [247, 247, 247] },
           columnStyles: colStyles,
@@ -532,37 +532,38 @@ export default function PDFButton({ facture, parametres }: any) {
             doc.text("TOTAL", TX + 4, ty + 6.5);
             doc.text(`${Number(facture.total_ht).toFixed(2)} ${devise}`, W - MR - 4, ty + 6.5, { align: "right" });
           } else {
-            let ty = finalY + 8;
-            // Devis (HT + TVA + TTC)
+            // Devis (HT + TVA + TTC) attaché au tableau
+            let ty = finalY;
+            const hBlock = 22; // Hauteur totale du bloc
+            
+            // Cadre extérieur
+            doc.setFillColor(...C.WHITE);
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.rect(TX, ty, TW, hBlock, "FD");
+
             const row = (label: string, value: string, bold = false) => {
               doc.setFont("helvetica", bold ? "bold" : "normal");
               doc.setFontSize(9);
               doc.setTextColor(...C.GRAY1);
-              doc.text(label, TX, ty);
+              doc.text(label, TX + 4, ty);
               doc.setTextColor(...(bold ? C.BLACK : C.DARK));
-              doc.text(value, W - MR, ty, { align: "right" });
+              doc.text(value, W - MR - 4, ty, { align: "right" });
               ty += 6;
             };
 
-            doc.setDrawColor(...C.GRAY3);
-            doc.setLineWidth(0.3);
-            doc.line(TX, ty - 4, W - MR, ty - 4);
-
+            ty += 6; // start inside box
             row("Montant HT", `${Number(facture.total_ht).toFixed(2)} ${devise}`);
             row(`TVA (${parametres?.tva || 20}%)`, `${Number(facture.tva).toFixed(2)} ${devise}`);
 
-            doc.setDrawColor(...C.GRAY3);
-            doc.line(TX, ty - 2, W - MR, ty - 2);
-            ty += 2;
-
+            // TTC
             doc.setFillColor(...C.BLACK);
-            doc.rect(TX - 2, ty - 1, TW + 4, 12, "F");
-
+            doc.rect(TX, ty - 4, TW, 10, "F");
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.setTextColor(...C.WHITE);
-            doc.text("Total TTC", TX + 2, ty + 6.5);
-            doc.text(`${Number(facture.total_ttc).toFixed(2)} ${devise}`, W - MR - 2, ty + 6.5, { align: "right" });
+            doc.text("Total TTC", TX + 4, ty + 2.5);
+            doc.text(`${Number(facture.total_ttc).toFixed(2)} ${devise}`, W - MR - 4, ty + 2.5, { align: "right" });
           }
         }
       }

@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { Plus, Search, Trash2, X, Package, Tag, Layers, DollarSign, Box, Edit, Dices } from "lucide-react";
-import { addProduit, updateProduit, deleteProduit } from "@/app/admin/actions";
+import { addProduit, updateProduit, deleteProduit, resetAndSeedProduits } from "@/app/admin/actions";
+import { RefreshCw } from "lucide-react";
 
 interface Produit {
   reference: string;
   categorie: string | null;
   designation: string | null;
   unite: string | null;
+  prix_achat: number | null;
   prix_vente: number | null;
 }
 
@@ -19,10 +21,25 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
   const [designationInput, setDesignationInput] = useState("");
   const [categorieInput, setCategorieInput] = useState("");
   const [uniteInput, setUniteInput] = useState("U");
+  const [prixAchatInput, setPrixAchatInput] = useState("");
   const [prixVenteInput, setPrixVenteInput] = useState("");
 
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeed = async () => {
+    if (confirm("Attention : cela va vider la liste actuelle et charger les 45 produits de référence. Continuer ?")) {
+      setSeeding(true);
+      try {
+        await resetAndSeedProduits();
+      } catch (e) {
+        alert("Erreur lors de la réinitialisation des produits");
+      } finally {
+        setSeeding(false);
+      }
+    }
+  };
 
   const generateRandomRef = () => {
     const randomDigits = Math.floor(10000 + Math.random() * 90000);
@@ -35,6 +52,7 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
     setDesignationInput("");
     setCategorieInput("");
     setUniteInput("U");
+    setPrixAchatInput("");
     setPrixVenteInput("");
     setIsModalOpen(true);
   };
@@ -45,6 +63,7 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
     setDesignationInput(produit.designation || "");
     setCategorieInput(produit.categorie || "");
     setUniteInput(produit.unite || "U");
+    setPrixAchatInput(produit.prix_achat ? produit.prix_achat.toString() : "");
     setPrixVenteInput(produit.prix_vente ? produit.prix_vente.toString() : "");
     setIsModalOpen(true);
   };
@@ -90,13 +109,24 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
           <h1 className="text-3xl font-bold text-slate-900">Catalogue Produits</h1>
           <p className="text-slate-500 mt-1">{initialProduits.length} référence(s) enregistrée(s)</p>
         </div>
-        <button
-          onClick={openNewModal}
-          className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
-        >
-          <Plus size={18} />
-          Nouveau Produit
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleSeed}
+            disabled={seeding}
+            className="inline-flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl font-semibold transition-all cursor-pointer disabled:opacity-50 text-sm"
+            title="Vider et charger les 45 produits de référence"
+          >
+            <RefreshCw size={16} className={seeding ? "animate-spin" : ""} />
+            Charger les 45 produits
+          </button>
+          <button
+            onClick={openNewModal}
+            className="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 cursor-pointer"
+          >
+            <Plus size={18} />
+            Nouveau Produit
+          </button>
+        </div>
       </div>
 
       {/* Barre de Recherche */}
@@ -123,63 +153,82 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
             <thead className="sticky top-0 bg-slate-900 text-white z-10">
               <tr>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider w-36">Référence</th>
-                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider w-44">Catégorie</th>
+                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider w-36">Catégorie</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Désignation</th>
-                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center w-24">Unité</th>
-                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right w-36">Prix HT</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-center w-20">Unité</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-right w-32">Prix Achat HT</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-right w-32">Prix Vente HT</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-right w-28">Marge HT</th>
                 <th className="px-4 py-4 w-20 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredProduits.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                  <td colSpan={8} className="px-6 py-12 text-center text-slate-400">
                     <Package size={36} className="mx-auto mb-2 opacity-50" />
                     Aucun produit trouvé
                   </td>
                 </tr>
               ) : (
-                filteredProduits.map((p) => (
-                  <tr key={p.reference} className="hover:bg-blue-50/40 transition-colors group">
-                    <td className="px-6 py-3.5">
-                      <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100 text-xs">
-                        {p.reference}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5 text-slate-600 font-medium">
-                      {p.categorie || <span className="text-slate-300">—</span>}
-                    </td>
-                    <td className="px-6 py-3.5 text-slate-900 font-semibold">
-                      {p.designation || <span className="italic text-slate-400">Sans désignation</span>}
-                    </td>
-                    <td className="px-6 py-3.5 text-center">
-                      <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-                        {p.unite || "U"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3.5 text-right font-bold text-slate-900">
-                      {p.prix_vente ? `${Number(p.prix_vente).toFixed(2)} MAD` : <span className="text-slate-400 font-normal">—</span>}
-                    </td>
-                    <td className="px-4 py-3.5 text-center">
-                      <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button
-                          onClick={() => openEditModal(p)}
-                          className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
-                          title="Modifier"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(p.reference)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Supprimer"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                filteredProduits.map((p) => {
+                  const pa = Number(p.prix_achat || 0);
+                  const pv = Number(p.prix_vente || 0);
+                  const marge = pv - pa;
+                  return (
+                    <tr key={p.reference} className="hover:bg-blue-50/40 transition-colors group">
+                      <td className="px-6 py-3.5">
+                        <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100 text-xs">
+                          {p.reference}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-600 font-medium">
+                        {p.categorie || <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-6 py-3.5 text-slate-900 font-semibold">
+                        {p.designation || <span className="italic text-slate-400">Sans désignation</span>}
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full text-xs font-semibold">
+                          {p.unite || "U"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-medium text-slate-500">
+                        {pa > 0 ? `${pa.toFixed(2)}` : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-bold text-slate-900">
+                        {pv > 0 ? `${pv.toFixed(2)}` : <span className="text-slate-300">—</span>}
+                      </td>
+                      <td className="px-4 py-3.5 text-right font-bold">
+                        {pv > 0 || pa > 0 ? (
+                          <span className={marge >= 0 ? "text-emerald-600" : "text-rose-600"}>
+                            {marge >= 0 ? "+" : ""}{marge.toFixed(2)}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-center">
+                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                          <button
+                            onClick={() => openEditModal(p)}
+                            className="p-1.5 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors"
+                            title="Modifier"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(p.reference)}
+                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Supprimer"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -303,23 +352,44 @@ export default function ProduitsClient({ initialProduits }: { initialProduits: P
                 </div>
               </div>
 
-              {/* Prix HT */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-                  Prix de Vente HT (MAD)
-                </label>
-                <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-blue-500 focus-within:bg-white transition-all">
-                  <DollarSign size={16} className="text-slate-400 flex-shrink-0" />
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    name="prix_vente"
-                    value={prixVenteInput}
-                    onChange={(e) => setPrixVenteInput(e.target.value)}
-                    placeholder="0.00"
-                    className="w-full bg-transparent text-slate-900 font-bold focus:outline-none text-sm"
-                  />
+              {/* Prix Achat & Prix Vente */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Prix d'Achat HT (MAD)
+                  </label>
+                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-blue-500 focus-within:bg-white transition-all">
+                    <DollarSign size={16} className="text-slate-400 flex-shrink-0" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      name="prix_achat"
+                      value={prixAchatInput}
+                      onChange={(e) => setPrixAchatInput(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-transparent text-slate-900 font-bold focus:outline-none text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                    Prix de Vente HT (MAD)
+                  </label>
+                  <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:border-blue-500 focus-within:bg-white transition-all">
+                    <DollarSign size={16} className="text-slate-400 flex-shrink-0" />
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      name="prix_vente"
+                      value={prixVenteInput}
+                      onChange={(e) => setPrixVenteInput(e.target.value)}
+                      placeholder="0.00"
+                      className="w-full bg-transparent text-slate-900 font-bold focus:outline-none text-sm"
+                    />
+                  </div>
                 </div>
               </div>
 

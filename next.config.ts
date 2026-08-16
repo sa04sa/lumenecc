@@ -6,9 +6,9 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   // Cloudflare Pages requires this for Server Actions & API routes
-  experimental: {
-    serverComponentsExternalPackages: ["@tidbcloud/serverless"],
-  },
+  serverExternalPackages: ["@tidbcloud/serverless"],
+  // Configure outputFileTracingRoot at top-level to avoid scanning parent folders
+  outputFileTracingRoot: __dirname,
 };
 
 export default nextConfig;

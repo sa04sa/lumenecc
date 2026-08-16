@@ -32,7 +32,9 @@ export default async function DevisPage() {
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Statut</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Client</th>
-                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Total HT</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-right">Prix Vente HT</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-right">Prix Achat HT</th>
+                <th className="px-4 py-4 font-semibold text-xs uppercase tracking-wider text-right">Marge HT</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Total TTC</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">PDF</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Action</th>
@@ -41,6 +43,9 @@ export default async function DevisPage() {
             <tbody className="divide-y divide-slate-100">
               {factures.map((f: any) => {
                 const isDraft = f.statut === "brouillon";
+                const totalVente = Number(f.total_ht || 0);
+                const totalAchat = Number(f.total_achat || 0);
+                const marge = totalVente - totalAchat;
                 return (
                   <tr key={f.id} className="hover:bg-blue-50/40 transition-colors group">
                     <td className="px-6 py-4">
@@ -62,7 +67,7 @@ export default async function DevisPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-600 font-medium">
+                    <td className="px-6 py-4 text-slate-600 font-medium whitespace-nowrap">
                       {new Date(f.date).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4">
@@ -73,10 +78,18 @@ export default async function DevisPage() {
                         <span className="font-semibold text-slate-900">{f.client_nom}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right font-medium text-slate-600">
-                      {Number(f.total_ht).toFixed(2)}
+                    <td className="px-4 py-4 text-right font-medium text-slate-700">
+                      {totalVente.toFixed(2)}
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-slate-900">
+                    <td className="px-4 py-4 text-right font-medium text-slate-500">
+                      {totalAchat.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-4 text-right font-bold">
+                      <span className={marge >= 0 ? "text-emerald-600" : "text-rose-600"}>
+                        {marge >= 0 ? "+" : ""}{marge.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-slate-900 whitespace-nowrap">
                       {Number(f.total_ttc).toFixed(2)} MAD
                     </td>
                     <td className="px-6 py-4">

@@ -17,11 +17,14 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { numero, date, client_id, total_ht, tva, total_ttc, statut = "validee", document_type = "facture", parent_id = null, parent_type = null, lignes } = body;
+    const { numero, date, client_id, total_ht, tva, total_ttc, statut = "validee", document_type = "facture", parent_id = null, parent_type = null, methode_paiement = "Espèces", num_cheque = null, lignes } = body;
+
+    try { await query("ALTER TABLE factures ADD COLUMN methode_paiement VARCHAR(50) DEFAULT 'Espèces'"); } catch (_) {}
+    try { await query("ALTER TABLE factures ADD COLUMN num_cheque VARCHAR(50) NULL"); } catch (_) {}
 
     const res: any = await query(
-      "INSERT INTO factures (numero, date, client_id, total_ht, tva, total_ttc, statut, document_type, parent_id, parent_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-      [numero, date, client_id, total_ht, tva, total_ttc, statut, document_type, parent_id, parent_type]
+      "INSERT INTO factures (numero, date, client_id, total_ht, tva, total_ttc, statut, document_type, parent_id, parent_type, methode_paiement, num_cheque) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      [numero, date, client_id, total_ht, tva, total_ttc, statut, document_type, parent_id, parent_type, methode_paiement, num_cheque]
     );
 
     const facture_id = res.insertId;

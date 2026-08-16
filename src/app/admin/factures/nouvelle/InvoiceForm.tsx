@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Plus, Trash2, Search, CheckCircle, FileText, User, Calendar, Hash, FileClock, RotateCcw, AlertTriangle, Link2 } from "lucide-react";
+import { Plus, Trash2, Search, CheckCircle, FileText, User, Calendar, Hash, FileClock, RotateCcw, AlertTriangle, Link2, CreditCard } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface Ligne {
@@ -38,6 +38,9 @@ export default function InvoiceForm({ clients, parametres, nextNumero, initialFa
     ? new Date(initialFacture.date).toISOString().split("T")[0] 
     : new Date().toISOString().split("T")[0];
   const [date, setDate] = useState(initialDate);
+
+  const [methodePaiement, setMethodePaiement] = useState<string>(initialFacture?.methode_paiement || "Espèces");
+  const [numCheque, setNumCheque] = useState<string>(initialFacture?.num_cheque || "");
 
   const [saving, setSaving] = useState(false);
   const [autoSaving, setAutoSaving] = useState(false);
@@ -85,6 +88,8 @@ export default function InvoiceForm({ clients, parametres, nextNumero, initialFa
         document_type: documentType,
         parent_id: parentId,
         parent_type: parentType,
+        methode_paiement: methodePaiement,
+        num_cheque: numCheque,
         lignes: validLignes
       };
 
@@ -352,6 +357,48 @@ export default function InvoiceForm({ clients, parametres, nextNumero, initialFa
               </select>
             </div>
           </div>
+        </div>
+
+        {/* Mode de règlement */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <CreditCard size={18} className="text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">Mode de règlement</p>
+              <select
+                value={methodePaiement}
+                onChange={e => setMethodePaiement(e.target.value)}
+                disabled={isReadOnly}
+                className="w-full bg-transparent text-slate-900 font-semibold focus:outline-none cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                <option value="Espèces">Espèces</option>
+                <option value="Chèque">Chèque</option>
+                <option value="Virement">Virement bancaire</option>
+                <option value="Traite">Traite</option>
+              </select>
+            </div>
+          </div>
+
+          {(methodePaiement === "Chèque" || methodePaiement === "Traite") && (
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center gap-3 animate-in fade-in duration-200">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Hash size={18} className="text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1">N° de {methodePaiement}</p>
+                <input
+                  type="text"
+                  value={numCheque}
+                  onChange={e => setNumCheque(e.target.value)}
+                  placeholder={`Entrer le numéro de ${methodePaiement.toLowerCase()}`}
+                  disabled={isReadOnly}
+                  className="w-full bg-transparent text-slate-900 font-semibold focus:outline-none disabled:opacity-70 disabled:cursor-not-allowed"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Tableau des produits */}

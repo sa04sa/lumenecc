@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -146,18 +147,18 @@ export default function AdminLoginPage() {
 
           {/* Back to site */}
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-gray-500 hover:text-gray-300 text-xs transition-colors inline-flex items-center gap-1"
             >
               ← Retour au site
-            </a>
+            </Link>
           </div>
         </div>
 
         {/* Footer */}
         <p className="text-center text-gray-700 text-xs mt-6">
-          © {new Date().getFullYear()} LUMENEC — Panneau d'administration sécurisé
+          © {new Date().getFullYear()} LUMENEC — Panneau d&apos;administration sécurisé
         </p>
       </div>
     </div>

@@ -32,8 +32,6 @@ export default async function BonsLivraisonPage() {
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Statut</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider">Client</th>
-                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Total HT</th>
-                <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-right">Total TTC</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">PDF</th>
                 <th className="px-6 py-4 font-semibold text-xs uppercase tracking-wider text-center">Action</th>
               </tr>
@@ -62,7 +60,7 @@ export default async function BonsLivraisonPage() {
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-slate-600 font-medium">
+                    <td className="px-6 py-4 text-slate-600 font-medium whitespace-nowrap">
                       {new Date(f.date).toLocaleDateString('fr-FR')}
                     </td>
                     <td className="px-6 py-4">
@@ -72,12 +70,6 @@ export default async function BonsLivraisonPage() {
                         </div>
                         <span className="font-semibold text-slate-900">{f.client_nom}</span>
                       </div>
-                    </td>
-                    <td className="px-6 py-4 text-right font-medium text-slate-600">
-                      {Number(f.total_ht).toFixed(2)}
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-slate-900">
-                      {Number(f.total_ttc).toFixed(2)} MAD
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center">

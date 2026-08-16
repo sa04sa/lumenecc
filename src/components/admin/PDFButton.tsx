@@ -119,8 +119,7 @@ export default function PDFButton({ facture, parametres }: any) {
         const GREY_BORDER: [number, number, number] = [170, 175, 185];
 
         // ── FOND EN-TÊTE ──
-        doc.setFillColor(250, 251, 252);
-        doc.rect(0, 0, W, HDR_H, "F");
+        // Fond transparent (blanc) comme les autres documents
         // Ligne inférieure
         doc.setFillColor(...GREY_HEADER);
         doc.rect(0, HDR_H, W, 1, "F");
@@ -166,23 +165,22 @@ export default function PDFButton({ facture, parametres }: any) {
         doc.setTextColor(...C.BLACK);
         doc.text("FACTURE", COL_R_X, 15, { align: "right" });
 
-        // Contacts (en dessous du titre)
+        // Numéro, Date, Règlement (en dessous du titre FACTURE)
         let ry = 22;
-        doc.setFontSize(6.5);
-
-        const contactItems = [
-          parametres?.telephone ? `Tél : ${parametres.telephone}` : null,
-          parametres?.fax       ? `Fax : ${parametres.fax}`       : null,
-          parametres?.email     ? `Email : ${parametres.email}`   : null,
-          parametres?.siteweb   ? `Web : ${parametres.siteweb}`   : null,
-        ].filter(Boolean) as string[];
-
-        contactItems.forEach(line => {
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(...C.GRAY1);
-          doc.text(line, COL_R_X, ry, { align: "right" });
-          ry += 3.6;
-        });
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C.BLACK);
+        doc.text(`N° ${facture.numero}`, COL_R_X, ry, { align: "right" });
+        ry += 4;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(...C.GRAY1);
+        doc.text(`Date : ${dateStr}`, COL_R_X, ry, { align: "right" });
+        ry += 4;
+        if (facture.methode_paiement) {
+          const reglStr = facture.methode_paiement + (facture.num_cheque ? ` - N° ${facture.num_cheque}` : "");
+          doc.text(`Règlement : ${reglStr}`, COL_R_X, ry, { align: "right" });
+        }
 
         // ── COLONNE CENTRE : Logo + Nom société ──
         const logoMaxW = 64, logoMaxH = 32;
@@ -209,39 +207,35 @@ export default function PDFButton({ facture, parametres }: any) {
           midX, logoBottomY + 9, { align: "center" }
         );
 
-        // ── SOUS-HEADER : Numéro / Date / Règlement (Gauche) | FACTURE titre + Client (Droite) ──
+        // ── SOUS-HEADER : Contacts (Gauche) | Cadre Client (Droite) ──
         const SH_Y = HDR_H + 7;
 
-        // Bloc gauche : numéro et date
-        doc.setFont("helvetica", "normal");
+        // Contacts à gauche
         doc.setFontSize(7.5);
-        doc.setTextColor(100, 105, 115);
-        doc.text("N°", ML, SH_Y);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(9);
-        doc.setTextColor(...C.BLACK);
-        doc.text(facture.numero, ML + 7, SH_Y);
+        let shY = SH_Y;
+        const contactItems = [
+          parametres?.telephone ? `Tél : ${parametres.telephone}` : null,
+          parametres?.fax       ? `Fax : ${parametres.fax}`       : null,
+          parametres?.email     ? `Email : ${parametres.email}`   : null,
+          parametres?.siteweb   ? `Web : ${parametres.siteweb}`   : null,
+        ].filter(Boolean) as string[];
 
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7.5);
-        doc.setTextColor(100, 105, 115);
-        doc.text("DATE :", ML, SH_Y + 7);
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8.5);
-        doc.setTextColor(...C.BLACK);
-        doc.text(dateStr, ML + 14, SH_Y + 7);
-
-        if (facture.methode_paiement) {
-          doc.setFont("helvetica", "normal");
-          doc.setFontSize(7.5);
-          doc.setTextColor(100, 105, 115);
-          doc.text("RÈGLEMENT :", ML, SH_Y + 14);
+        contactItems.forEach(line => {
           doc.setFont("helvetica", "bold");
-          doc.setFontSize(8.5);
           doc.setTextColor(...C.BLACK);
-          const reglStr = facture.methode_paiement + (facture.num_cheque ? ` — N° ${facture.num_cheque}` : "");
-          doc.text(reglStr, ML + 22, SH_Y + 14);
-        }
+          const parts = line.split(" : ");
+          if (parts.length === 2) {
+             doc.text(`${parts[0]} :`, ML, shY);
+             doc.setFont("helvetica", "normal");
+             doc.setTextColor(...C.GRAY1);
+             doc.text(parts[1], ML + 12, shY);
+          } else {
+             doc.setFont("helvetica", "normal");
+             doc.setTextColor(...C.GRAY1);
+             doc.text(line, ML, shY);
+          }
+          shY += 5;
+        });
 
         // Cadre client (droite)
         const clientBoxX = midX + 4;

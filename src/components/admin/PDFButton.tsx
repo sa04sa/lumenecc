@@ -362,7 +362,7 @@ export default function PDFButton({ facture, parametres }: any) {
         // =========================================================================
         //  DESIGN STANDARD MINIMALISTE (Devis, Bon de Commande, Bon de Livraison)
         // =========================================================================
-        const HDR_TOP = 14, HDR_BOT = 44;
+        const HDR_TOP = 8, HDR_BOT = 44; // Remonté pour plus d'espace
 
         // Trait doré élégant en haut
         doc.setFillColor(...C.GOLD);

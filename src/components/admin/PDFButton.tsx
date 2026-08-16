@@ -421,11 +421,6 @@ export default function PDFButton({ facture, parametres }: any) {
         doc.setFontSize(8);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(...C.GRAY1);
-        if (parametres?.adresse) {
-          const ls = doc.splitTextToSize(parametres.adresse, 80);
-          doc.text(ls, ML, ey);
-          ey += ls.length * 4.2;
-        }
         if (parametres?.telephone) { doc.text(`Tél : ${parametres.telephone}`, ML, ey); ey += 4.2; }
         if (parametres?.email)     { doc.text(parametres.email, ML, ey); }
 

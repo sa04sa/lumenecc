@@ -160,18 +160,18 @@ export default function PDFButton({ facture, parametres }: any) {
         // ── COLONNE DROITE : Contacts & Titre (alignés à droite) ──
         const COL_R_X = W - MR;
 
-        // Titre FACTURE stylé (Badge Noir & Blanc) en HAUT À DROITE
+        // Titre FACTURE (Fond blanc, sans bordure noire, texte noir) en HAUT À DROITE
         const badgeW = 45;
         const badgeH = 11;
         const badgeX = COL_R_X - badgeW;
         const badgeY = 7;
         
-        doc.setFillColor(...C.BLACK);
-        doc.rect(badgeX, badgeY, badgeW, badgeH, "F");
+        doc.setFillColor(...C.WHITE);
+        doc.rect(badgeX, badgeY, badgeW, badgeH, "F"); // "F" = remplissage uniquement, pas de bordure
         
         doc.setFont("helvetica", "bold");
         doc.setFontSize(18);
-        doc.setTextColor(...C.WHITE);
+        doc.setTextColor(...C.BLACK);
         doc.text("FACTURE", badgeX + badgeW / 2, badgeY + 8, { align: "center" });
 
         // Contacts (en dessous du badge)

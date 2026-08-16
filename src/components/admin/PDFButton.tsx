@@ -235,11 +235,20 @@ export default function PDFButton({ facture, parametres }: any) {
           doc.text(reglStr, ML + 22, SH_Y + 14);
         }
 
-        // Titre FACTURE à droite dans l'en-tête (au lieu de chevaucher le cadre client)
+        // Titre FACTURE stylé (Badge Noir & Blanc) à droite
+        const badgeW = 45;
+        const badgeH = 11;
+        const badgeX = W - MR - badgeW;
+        const badgeY = 37;
+        
+        doc.setFillColor(...C.BLACK);
+        doc.rect(badgeX, badgeY, badgeW, badgeH, "F");
+        
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.setTextColor(...C.BLACK);
-        doc.text("FACTURE", W - MR, 46, { align: "right" });
+        doc.setFontSize(18);
+        doc.setTextColor(...C.WHITE);
+        // text(text, x, y, options)
+        doc.text("FACTURE", badgeX + badgeW / 2, badgeY + 8, { align: "center" });
 
         // Cadre client (droite)
         const clientBoxX = midX + 4;

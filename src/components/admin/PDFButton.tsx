@@ -88,8 +88,8 @@ export default function PDFButton({ facture, parametres }: any) {
       img.src = "/logo_lumenec-without-background.png";
       await new Promise(r => { img.onload = r; img.onerror = r; });
 
-      // Watermark logo (fond)
-      if (img.width > 0 && img.height > 0) {
+      // Watermark logo (fond) - pas de watermark pour Bon de Livraison
+      if (img.width > 0 && img.height > 0 && docType !== "bon_livraison") {
         doc.saveGraphicsState();
         try { (doc as any).setGState(new (doc as any).GState({ opacity: 0.12 })); } catch (_) {}
         const wW = 120, wH = (img.height / img.width) * wW;
@@ -370,7 +370,7 @@ export default function PDFButton({ facture, parametres }: any) {
 
         // Logo à gauche
         if (img.width > 0 && img.height > 0) {
-          const maxW = 44, maxH = 22;
+          const maxW = 70, maxH = 35; // Agrandissement du logo principal
           const ratio = Math.min(maxW / img.width, maxH / img.height);
           doc.addImage(img, "PNG", ML, HDR_TOP, img.width * ratio, img.height * ratio);
         } else {
@@ -515,19 +515,24 @@ export default function PDFButton({ facture, parametres }: any) {
         if (!hidePrices) {
           const TW = 74;
           const TX = W - MR - TW;
-          let ty   = finalY + 8;
 
           if (docType === "bon_livraison") {
-            // Affichage simplifié sans TVA
-            doc.setFillColor(...C.BLACK);
-            doc.rect(TX - 2, ty - 1, TW + 4, 12, "F");
+            // Pas d'espace entre les produits et le total pour le BL
+            let ty = finalY;
+            
+            // Affichage avec bordure attachée au tableau
+            doc.setFillColor(...C.WHITE);
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.rect(TX, ty, TW, 10, "FD");
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
-            doc.setTextColor(...C.WHITE);
-            doc.text("TOTAL", TX + 2, ty + 6.5);
-            doc.text(`${Number(facture.total_ht).toFixed(2)} ${devise}`, W - MR - 2, ty + 6.5, { align: "right" });
+            doc.setFontSize(9);
+            doc.setTextColor(...C.BLACK);
+            doc.text("TOTAL", TX + 4, ty + 6.5);
+            doc.text(`${Number(facture.total_ht).toFixed(2)} ${devise}`, W - MR - 4, ty + 6.5, { align: "right" });
           } else {
+            let ty = finalY + 8;
             // Devis (HT + TVA + TTC)
             const row = (label: string, value: string, bold = false) => {
               doc.setFont("helvetica", bold ? "bold" : "normal");

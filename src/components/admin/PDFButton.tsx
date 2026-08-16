@@ -201,45 +201,45 @@ export default function PDFButton({ facture, parametres }: any) {
           midX, logoBottomY + 10, { align: "center" }
         );
 
-        // ── SOUS-HEADER : Titre | Numéro / Date / Règlement (Gauche) | Cadre Client (Droite) ──
+        // ── SOUS-HEADER : Numéro / Date / Règlement (Gauche) | FACTURE titre + Client (Droite) ──
         const SH_Y = HDR_H + 7;
 
-        // Titre FACTURE à gauche, grand et en gras
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(18);
-        doc.setTextColor(...C.BLACK);
-        doc.text("FACTURE", ML, SH_Y + 2);
-
-        // Numéro et date en dessous du titre
+        // Bloc gauche : numéro et date
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(100, 105, 115);
-        doc.text("N°", ML, SH_Y + 10);
+        doc.text("N°", ML, SH_Y);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...C.BLACK);
-        doc.text(facture.numero, ML + 7, SH_Y + 10);
+        doc.text(facture.numero, ML + 7, SH_Y);
 
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(100, 105, 115);
-        doc.text("DATE :", ML, SH_Y + 17);
+        doc.text("DATE :", ML, SH_Y + 7);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(8.5);
         doc.setTextColor(...C.BLACK);
-        doc.text(dateStr, ML + 14, SH_Y + 17);
+        doc.text(dateStr, ML + 14, SH_Y + 7);
 
         if (facture.methode_paiement) {
           doc.setFont("helvetica", "normal");
           doc.setFontSize(7.5);
           doc.setTextColor(100, 105, 115);
-          doc.text("RÈGLEMENT :", ML, SH_Y + 24);
+          doc.text("RÈGLEMENT :", ML, SH_Y + 14);
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8.5);
           doc.setTextColor(...C.BLACK);
           const reglStr = facture.methode_paiement + (facture.num_cheque ? ` — N° ${facture.num_cheque}` : "");
-          doc.text(reglStr, ML + 22, SH_Y + 24);
+          doc.text(reglStr, ML + 22, SH_Y + 14);
         }
+
+        // Titre FACTURE à droite (au-dessus du cadre client)
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(...C.BLACK);
+        doc.text("FACTURE", W - MR, SH_Y - 2, { align: "right" });
 
         // Cadre client (droite)
         const clientBoxX = midX + 4;
@@ -569,20 +569,29 @@ export default function PDFButton({ facture, parametres }: any) {
       // =========================================================================
       //  FOOTER
       // =========================================================================
-
-      // Barre dorée centrée (3cm)
-      doc.setFillColor(...C.GOLD);
-      doc.rect(W / 2 - 15, H - 10, 30, 1.5, "F");
-
-      // DNS du site web
       const siteUrl = parametres?.siteweb || "www.lumenec-sarl.com";
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(8);
-      doc.setTextColor(...C.BLACK);
-      doc.text(siteUrl, W / 2, H - 5, { align: "center" });
 
-      // Infos complètes uniquement sur la facture
       if (isFacture) {
+        // Footer complet : logo + barre dorée + DNS + infos légales
+
+        // Logo 3cm (30mm) centré à gauche
+        if (img.width > 0 && img.height > 0) {
+          const fLogoW = 30, fLogoH = (img.height / img.width) * fLogoW;
+          const fLogoY = H - fLogoH - 2;
+          doc.addImage(img, "PNG", ML, fLogoY, fLogoW, fLogoH);
+        }
+
+        // Barre dorée centrée
+        doc.setFillColor(...C.GOLD);
+        doc.rect(W / 2 - 15, H - 18, 30, 1.5, "F");
+
+        // DNS
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...C.BLACK);
+        doc.text(siteUrl, W / 2, H - 13, { align: "center" });
+
+        // Infos légales
         const footerLine1 = [
           parametres?.adresse   || "",
           parametres?.telephone ? `Tél : ${parametres.telephone}` : "",
@@ -590,25 +599,26 @@ export default function PDFButton({ facture, parametres }: any) {
         ].filter(Boolean).join("   ·   ");
 
         const footerLine2 = [
-          parametres?.rc      ? `R.C. : ${parametres.rc}`       : "",
-          parametres?.if_taxe ? `I.F. : ${parametres.if_taxe}` : "",
-          parametres?.cnss    ? `C.N.S.S. : ${parametres.cnss}`: "",
-          parametres?.ice     ? `ICE : ${parametres.ice}`      : "",
+          parametres?.rc      ? `R.C. : ${parametres.rc}`        : "",
+          parametres?.if_taxe ? `I.F. : ${parametres.if_taxe}`  : "",
+          parametres?.cnss    ? `C.N.S.S. : ${parametres.cnss}` : "",
+          parametres?.ice     ? `ICE : ${parametres.ice}`       : "",
         ].filter(Boolean).join("   ·   ");
-
-        // Décale la barre et le DNS vers le haut pour faire de la place
-        doc.setFillColor(...C.GOLD);
-        doc.rect(W / 2 - 15, H - 18, 30, 1.5, "F");
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(8);
-        doc.setTextColor(...C.BLACK);
-        doc.text(siteUrl, W / 2, H - 13, { align: "center" });
 
         doc.setFontSize(6);
         doc.setFont("helvetica", "normal");
         doc.setTextColor(120, 125, 135);
         if (footerLine1) doc.text(footerLine1, W / 2, H - 8, { align: "center", maxWidth: W - 16 });
         if (footerLine2) doc.text(footerLine2, W / 2, H - 4, { align: "center", maxWidth: W - 16 });
+
+      } else {
+        // Footer minimal pour les autres documents
+        doc.setFillColor(...C.GOLD);
+        doc.rect(W / 2 - 15, H - 10, 30, 1.5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...C.BLACK);
+        doc.text(siteUrl, W / 2, H - 5, { align: "center" });
       }
 
       // Sortie

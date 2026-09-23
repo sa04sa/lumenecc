@@ -455,7 +455,11 @@ export default function PDFButton({ facture, parametres }: any) {
         const tableY = Math.max(ey, cy) + 10;
         const head = hidePrices
           ? [["Référence", "Désignation", "Quantité"]]
-          : [["Référence", "Désignation", "Quantité", "PRIX H.T.", "Montant"]];
+          : docType === "bon_livraison"
+            ? [["Référence", "Désignation", "Quantité", "PRIX", "Montant"]]
+            : [["Référence", "Désignation", "Quantité", "PRIX H.T.", "Montant"]];
+
+        const tvaMultiplier = 1 + (Number(parametres?.tva || 20) / 100);
 
         const body = lignes.map(l => {
           const row: any[] = [
@@ -464,8 +468,10 @@ export default function PDFButton({ facture, parametres }: any) {
             { content: String(l.quantite), styles: { halign: "center" as const } },
           ];
           if (!hidePrices) {
-            row.push({ content: Number(l.prix_unitaire).toFixed(2), styles: { halign: "right" as const } });
-            row.push({ content: Number(l.total_ligne).toFixed(2),   styles: { halign: "right" as const, fontStyle: "bold" as const } });
+            const prixU = docType === "bon_livraison" ? Number(l.prix_unitaire) * tvaMultiplier : Number(l.prix_unitaire);
+            const totalL = docType === "bon_livraison" ? Number(l.total_ligne) * tvaMultiplier : Number(l.total_ligne);
+            row.push({ content: prixU.toFixed(2), styles: { halign: "right" as const } });
+            row.push({ content: totalL.toFixed(2), styles: { halign: "right" as const, fontStyle: "bold" as const } });
           }
           return row;
         });
@@ -524,8 +530,8 @@ export default function PDFButton({ facture, parametres }: any) {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
             doc.setTextColor(...C.BLACK);
-            doc.text("TOTAL", TX + 4, ty + 6.5);
-            doc.text(`${Number(facture.total_ht).toFixed(2)} ${devise}`, W - MR - 4, ty + 6.5, { align: "right" });
+            doc.text("TOTAL TTC", TX + 4, ty + 6.5);
+            doc.text(`${Number(facture.total_ttc).toFixed(2)} ${devise}`, W - MR - 4, ty + 6.5, { align: "right" });
           } else {
             // Devis (HT + TVA + TTC) attaché au tableau
             let ty = finalY;

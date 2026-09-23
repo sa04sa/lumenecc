@@ -300,8 +300,9 @@ export default function PDFButton({ facture, parametres }: any) {
             cellPadding: { top: 2.5, bottom: 2.5, left: 3, right: 3 },
             lineColor:   [215, 220, 230],
             lineWidth:   0.3,
+            fillColor:   false, // transparent
           },
-          alternateRowStyles: { fillColor: [248, 249, 251] },
+          alternateRowStyles: { fillColor: false }, // transparent pour voir le filigrane
           columnStyles: {
             0: { cellWidth: 26 },
             1: { cellWidth: "auto" },
@@ -333,11 +334,10 @@ export default function PDFButton({ facture, parametres }: any) {
           doc.setFontSize(6.5);
           doc.setTextColor(...C.WHITE);
           doc.text(col.label, cx + colW / 2, totY + 3.5, { align: "center" });
-          // Fond valeur
-          doc.setFillColor(...C.WHITE);
+          // Fond valeur (transparent)
           doc.setDrawColor(...GREY_BORDER);
           doc.setLineWidth(0.4);
-          doc.rect(cx, totY + totH / 2, colW, totH / 2);
+          doc.rect(cx, totY + totH / 2, colW, totH / 2); // Seulement la bordure, pas de fond
           doc.setFont("helvetica", "bold");
           doc.setFontSize(8.5);
           doc.setTextColor(...C.BLACK);
@@ -346,10 +346,9 @@ export default function PDFButton({ facture, parametres }: any) {
 
         // ── SOMME EN LETTRES ──
         const lettresY = totY + totH + 6;
-        doc.setFillColor(245, 246, 248);
         doc.setDrawColor(...GREY_BORDER);
         doc.setLineWidth(0.3);
-        doc.rect(ML, lettresY - 3.5, W - ML - MR, 8.5);
+        doc.rect(ML, lettresY - 3.5, W - ML - MR, 8.5); // Seulement bordure, pas de fond gris
         doc.setFont("helvetica", "bold");
         doc.setFontSize(7);
         doc.setTextColor(...C.BLACK);

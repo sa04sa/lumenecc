@@ -1,29 +1,31 @@
-import { connect } from '@tidbcloud/serverless';
+import mysql from 'mysql2/promise';
 
-// Singleton connection to avoid multiple instances in dev
+// Singleton connection pool to avoid multiple instances in dev
 declare global {
-  var tidbConn: ReturnType<typeof connect> | undefined;
+  var mysqlPool: mysql.Pool | undefined;
 }
 
-const getConn = () => {
-  const url = process.env.DATABASE_URL;
-  if (!url) {
-    throw new Error('DATABASE_URL est manquant dans les variables d\'environnement');
-  }
-  return connect({ url });
+const getPool = () => {
+  return mysql.createPool({
+    host:     process.env.DB_HOST || '127.0.0.1',
+    port:     Number(process.env.DB_PORT) || 3306,
+    user:     process.env.DB_USER || 'root',
+    password: process.env.DB_PASS || 'root',
+    database: process.env.DB_NAME || 'trissyan_db',
+    waitForConnections: true,
+    connectionLimit: 10,
+  });
 };
 
-const conn = global.tidbConn || getConn();
+const pool = global.mysqlPool || getPool();
 
 if (process.env.NODE_ENV !== 'production') {
-  global.tidbConn = conn;
+  global.mysqlPool = pool;
 }
 
 export async function query(sql: string, values?: any[]) {
-  // @tidbcloud/serverless return array for SELECT, and object (with insertId) for mutations
-  // This behaves exactly like the first element of mysql2's [rows] return.
-  const result = await conn.execute(sql, values);
-  return result;
+  const [rows] = await pool.execute(sql, values);
+  return rows;
 }
 
-export default conn;
+export default pool;
